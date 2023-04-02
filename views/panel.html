@@ -1,0 +1,60 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="/assets/css/main.css">
+    </head>
+    <body>
+        <div class="login">
+            <h2>Firefly</h2>
+            <h3>Login</h3>
+
+            <input class="input" id="username-input" type="text" placeholder="Enter Username...">
+            <input class="input" id="password-input" type="password" placeholder="Enter Password...">
+
+            <div class="login-button" id="login-button">Login</div>
+
+            <div class="loader flip-side"></div>
+
+            <div class="pass-change">
+                <h2 id="welcomeback-text">Welcome back {{user}}</h2>
+                <h3>Password Reset</h3>
+
+                <input class="input" id="passreset-input" type="password" placeholder="Enter New Password...">
+                <input class="input" id="passreset-input-confirm" type="password" placeholder="Confirm New Password...">
+                
+                <div class="login-button" id="reset-button">Continue</div>
+            </div>
+        </div>
+
+        <div class="panel-loading">Welcome Back {{user}}</div>
+
+        <div class="main">
+            <div class="records">
+                <div class="records-header">Records</div>
+                <div class="records-body"></div>
+                <div class="new-record">
+                    <input id="newrec-domain" class="input-inline" type="text" placeholder="Enter Domain...">
+                    <input id="newrec-ip" class="input-inline" type="text" placeholder="Enter IP...">
+                    <input id="newrec-port" class="input-inline" type="number" placeholder="Enter Port...">
+                    <div id="newrec-button" class="button">Add Record.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="record-editor">
+            <h2>phazed.xyz</h2>
+
+            <p>Created by {{user}}</p>
+
+            <input id="recordedit-ip" type="text" class="input" placeholder="Change IP...">
+            <input id="recordedit-port" type="number" class="input" placeholder="Change Port...">
+
+            <br />
+            <div id="recordedit-save" class="button">Save Record</div>
+            <div id="recordedit-delete" class="button-delete">Delete Record</div>
+            <br /><br />
+            <div id="recordedit-cancel" class="button-wide">Cancel</div>
+        </div>
+
+        <script src="/assets/js/bundle.js"></script>
+    </body>
+</html>
