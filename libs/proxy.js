@@ -43,10 +43,10 @@ let handleRequest = ( preq, pres ) => {
         }, ( res ) => {
             // console.log('Response...');
 
-            if(res.headers['server'])
-                res.headers['server'] = res.headers['server'] + ' (Firefly '+pkg.version+')';
+            if(res.headers['X-Powered-By'])
+                res.headers['X-Powered-By'] = res.headers['X-Powered-By'] + ' (Firefly '+pkg.version+')';
             else
-                res.headers['server'] = 'Firefly '+pkg.version;
+                res.headers['X-Powered-By'] = 'Firefly '+pkg.version;
 
             pres.writeHead(res.statusCode, res.headers);
             res.pipe(pres, { end: true });
