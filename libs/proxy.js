@@ -46,7 +46,7 @@ let handleRequest = ( preq, pres ) => {
             if(res.headers['server'])
                 res.headers['server'] = res.headers['server'] + ' (Firefly '+pkg.version+')';
             else
-                res.headers['server'] = 'Firefly '+package.version;
+                res.headers['server'] = 'Firefly '+pkg.version;
 
             pres.writeHead(res.statusCode, res.headers);
             res.pipe(pres, { end: true });
