@@ -254,7 +254,8 @@ let main = async ( port ) => {
         return;
     })
 
-    app.listen({ port, host: '0.0.0.0' });
+    console.log('Panel listening on port ' + port);
+    app.listen({ port });
 }
 
 module.exports = { main };
