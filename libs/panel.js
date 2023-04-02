@@ -77,7 +77,7 @@ let main = async ( port ) => {
     })
 
     app.post('/api/v1/records', ( req, res ) => {
-        let session = request.headers.auth;
+        let session = req.headers.auth;
         let usess = sessions.find(s => s.session === session);
 
         if(!usess)
