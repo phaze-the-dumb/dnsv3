@@ -2,8 +2,6 @@
 
 Firefly (DNSv3) is a reverse proxy server with a web-gui, a bit like nginx
 
-===
-
 Notes:
 - Written to be used with bun
 - Does not run with node
