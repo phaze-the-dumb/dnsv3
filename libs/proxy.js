@@ -1,6 +1,7 @@
 const fs = require('fs');
 const http = require('http');
 const https = require('https');
+const config = require('../config.json');
 const pkg = require('../package.json');
 
 let records = JSON.parse(fs.readFileSync('./data/records.json', 'utf8'));
@@ -10,51 +11,71 @@ let errors = {
     503: fs.readFileSync('views/503.html', 'utf8')
 }
 
-let main = () => {
-    http.createServer((preq, pres) => {
-        try{
-            let rec = records.find(r => r.domain === preq.headers.host);
-            if(!rec){
-                pres.writeHead(404, { 'Content-Type': 'text/html' });
-                pres.write(errors[404]);
+if(config.useSSL){
+    if(!fs.existsSync('ssl')){
+        fs.mkdirSync('ssl');
 
-                pres.end();
-                return;
-            }
+        console.log('Please put SSL certificate in ./ssl folder');
+        process.exit(1);
+    }
+}
 
-            let proxy = http.request({
-                hostname: rec.domain,
-                port: rec.port,
-                path: preq.url,
-                method: preq.method,
-                headers: preq.headers
-            }, ( res ) => {
-                if(res.headers['server'])
-                    res.headers['server'] = res.headers['server'] + ' (Firefly '+pkg.version+')';
-                else
-                    res.headers['server'] = 'Firefly '+package.version;
+let handleRequest = ( preq, pres ) => {
+    try{
+        let rec = records.find(r => r.domain === preq.headers.host);
+        if(!rec){
+            pres.writeHead(404, { 'Content-Type': 'text/html' });
+            pres.write(errors[404]);
 
-                pres.writeHead(res.statusCode, res.headers);
-                res.pipe(pres, { end: true });
-            });
-
-            proxy.on('error', ( err ) => {
-                console.error(err);
-
-                pres.writeHead(503, { 'Content-Type': 'text/html' });
-                pres.write(errors[503]);
-                pres.end();
-            });
-
-            preq.pipe(proxy, { end: true });
-        } catch(e){
-            console.error(e);
-
-            pres.writeHead(500, { 'Content-Type': 'text/html' });
-            pres.write(errors[500]);
             pres.end();
+            return;
         }
-    }).listen(80);
+
+        let proxy = http.request({
+            hostname: rec.domain,
+            port: rec.port,
+            path: preq.url,
+            method: preq.method,
+            headers: preq.headers
+        }, ( res ) => {
+            if(res.headers['server'])
+                res.headers['server'] = res.headers['server'] + ' (Firefly '+pkg.version+')';
+            else
+                res.headers['server'] = 'Firefly '+package.version;
+
+            pres.writeHead(res.statusCode, res.headers);
+            res.pipe(pres, { end: true });
+        });
+
+        proxy.on('error', ( err ) => {
+            console.error(err);
+
+            pres.writeHead(503, { 'Content-Type': 'text/html' });
+            pres.write(errors[503]);
+            pres.end();
+        });
+
+        preq.pipe(proxy, { end: true });
+    } catch(e){
+        console.error(e);
+
+        pres.writeHead(500, { 'Content-Type': 'text/html' });
+        pres.write(errors[500]);
+        pres.end();
+    }
+}
+
+let main = () => {
+    http.createServer(handleRequest).listen(80);
+
+    if(config.useSSL){
+        let options = {
+            key: fs.readFileSync('./ssl/key.pem'),
+            cert: fs.readFileSync('./ssl/cert.pem')
+        }
+
+        https.createServer(options, handleRequest).listen(443);
+    }
 }
 
 let reloadRecords = () => {

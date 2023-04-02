@@ -1,0 +1,4 @@
+{
+    "useSSL": false,
+    "ports": [ 80, 443 ]
+}
