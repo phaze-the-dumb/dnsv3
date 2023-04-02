@@ -254,7 +254,7 @@ let main = async ( port ) => {
         return;
     })
 
-    app.listen({ port });
+    app.listen({ port, host: '0.0.0.0' });
 }
 
 module.exports = { main };
