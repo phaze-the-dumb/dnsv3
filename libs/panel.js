@@ -1,4 +1,4 @@
-const Fastify = require('fastify');
+const express = require('express');
 const crypto = require('crypto');
 const argon2 = require('argon2-wasm-pro');
 const proxy = require('./proxy');
@@ -16,7 +16,7 @@ if(!fs.existsSync('data/records.json'))
 let sessions = [];
 
 let main = async ( port ) => {
-    let app = Fastify();
+    let app = express();
     proxy.main();
 
     app.get('/', ( req, res ) => {
@@ -94,50 +94,60 @@ let main = async ( port ) => {
         if(!user)
             return res.send(JSON.stringify({ ok: false, error: 'User doesn\'t exist' }));
 
-        let body = req.body;
-        let records = JSON.parse(fs.readFileSync('data/records.json', 'utf8'));
+        let data = '';
+        req.on('data', chunk => data += chunk.toString());
 
-        records.push({
-            user: user.id,
-            userUsername: user.username,
-            time: Date.now(),
-            domain: body.record.domain,
-            ip: body.record.ip,
-            port: body.record.port,
-            id: crypto.randomUUID()
+        req.on('end', async () => {
+            let body = JSON.parse(data);
+            let records = JSON.parse(fs.readFileSync('data/records.json', 'utf8'));
+
+            records.push({
+                user: user.id,
+                userUsername: user.username,
+                time: Date.now(),
+                domain: body.record.domain,
+                ip: body.record.ip,
+                port: body.record.port,
+                id: crypto.randomUUID()
+            });
+
+            fs.writeFileSync('data/records.json', JSON.stringify(records));
+            proxy.reloadRecords();
+            res.send(JSON.stringify({ ok: true }));
         });
-
-        fs.writeFileSync('data/records.json', JSON.stringify(records));
-        proxy.reloadRecords();
-        res.send(JSON.stringify({ ok: true }));
     })
 
     app.post('/api/v1/auth', async ( req, res ) => {
-        let body = req.body;
-        if(!body)res.send(JSON.stringify({ ok: false, error: 'Bad Request' }));
-        let users = JSON.parse(fs.readFileSync('data/users.json', 'utf8'));
-        let user = null;
+        let data = '';
+        req.on('data', chunk => data += chunk.toString());
 
-        for (let i = 0; i < users.length; i++) {
-            let password = (await argon2.hash({ pass: body[1], salt: users[i].salt })).encoded;
+        req.on('end', async () => {
+            let body = JSON.parse(data);
+            if(!body)res.send(JSON.stringify({ ok: false, error: 'Bad Request' }));
+            let users = JSON.parse(fs.readFileSync('data/users.json', 'utf8'));
+            let user = null;
 
-            if(
-                users[i].password == password &&
-                users[i].username == body[0]
-            ) user = users[i];
-        }
+            for (let i = 0; i < users.length; i++) {
+                let password = (await argon2.hash({ pass: body[1], salt: users[i].salt })).encoded;
 
-        if(!user)res.send(JSON.stringify({ ok: false, error: 'Incorrect Username or Password' }));
-        sessions = sessions.filter(x => x.id !== user.id);
+                if(
+                    users[i].password == password &&
+                    users[i].username == body[0]
+                ) user = users[i];
+            }
 
-        let sessionData = {
-            id: user.id,
-            session: crypto.randomUUID() + crypto.randomUUID() + crypto.randomUUID(),
-            time: Date.now()
-        }
+            if(!user)res.send(JSON.stringify({ ok: false, error: 'Incorrect Username or Password' }));
+            sessions = sessions.filter(x => x.id !== user.id);
 
-        sessions.push(sessionData);
-        res.send(JSON.stringify({ ok: true, session: sessionData.session }));
+            let sessionData = {
+                id: user.id,
+                session: crypto.randomUUID() + crypto.randomUUID() + crypto.randomUUID(),
+                time: Date.now()
+            }
+
+            sessions.push(sessionData);
+            res.send(JSON.stringify({ ok: true, session: sessionData.session }));
+        })
     })
 
     app.post('/api/v1/auth/reset', async ( req, res ) => {
@@ -158,15 +168,20 @@ let main = async ( port ) => {
         if(!user)
             return res.send(JSON.stringify({ ok: false, error: 'User doesn\'t exist' }));
 
-        let body = req.body;
-        if(!body)return res.send(JSON.stringify({ ok: false, error: 'Bad Request' }));
-        let password = (await argon2.hash({ pass: body.password, salt: user.salt })).encoded;
+        let data = '';
+        req.on('data', chunk => data += chunk.toString());
 
-        user.password = password;
-        user.passwordChange = false;
+        req.on('end', async () => {
+            let body = JSON.parse(data);
+            if(!body)return res.send(JSON.stringify({ ok: false, error: 'Bad Request' }));
+            let password = (await argon2.hash({ pass: body.password, salt: user.salt })).encoded;
 
-        fs.writeFileSync('data/users.json', JSON.stringify(users));
-        res.send(JSON.stringify({ ok: true }));
+            user.password = password;
+            user.passwordChange = false;
+
+            fs.writeFileSync('data/users.json', JSON.stringify(users));
+            res.send(JSON.stringify({ ok: true }));
+        });
     })
 
     app.post('/api/v1/records/:id', (req, res) => {
@@ -238,20 +253,8 @@ let main = async ( port ) => {
         res.send(JSON.stringify({ ok: true }));
     })
 
-    app.setErrorHandler((err, req, res) => {
-        if(err instanceof Fastify.errorCodes.FST_ERR_NOT_FOUND){
-            res.header('Content-Type', 'text/html');
-            res.status(404);
-            res.send(fs.readFileSync('views/404.html', 'utf8'));
-            return;
-        }
-
-        console.log(err);
-
-        res.header('Content-Type', 'text/html');
-        res.status(404);
-        res.send(fs.readFileSync('views/500.html', 'utf8'));
-        return;
+    app.use((req, res) => {
+        res.sendFile('views/404.html');
     })
 
     console.log('Panel listening on port ' + port);
