@@ -21,10 +21,11 @@ if(config.useSSL){
 }
 
 let handleRequest = ( preq, pres ) => {
-    console.log('Handing request: '+preq.method+' '+preq.headers.host+'/'+preq.url);
+    console.log('Handing request: '+preq.method+' '+preq.headers.host+preq.url);
     try{
         let rec = records.find(r => r.domain === preq.headers.host);
         if(!rec){
+            console.log('404.');
             pres.writeHead(404, { 'Content-Type': 'text/html' });
             pres.write(errors[404]);
 
@@ -32,6 +33,7 @@ let handleRequest = ( preq, pres ) => {
             return;
         }
 
+        console.log('Proxying...');
         let proxy = http.request({
             hostname: rec.domain,
             port: rec.port,
@@ -39,6 +41,8 @@ let handleRequest = ( preq, pres ) => {
             method: preq.method,
             headers: preq.headers
         }, ( res ) => {
+            console.log('Response...');
+
             if(res.headers['server'])
                 res.headers['server'] = res.headers['server'] + ' (Firefly '+pkg.version+')';
             else
@@ -49,6 +53,7 @@ let handleRequest = ( preq, pres ) => {
         });
 
         proxy.on('error', ( err ) => {
+            console.log('503.');
             console.error(err);
 
             pres.writeHead(503, { 'Content-Type': 'text/html' });
