@@ -1,12 +1,3 @@
-/*
-    THIS SCRIPT DOESN'T WORK WITH BUN, PLEASE USE NODEJS TO RUN THIS SCRIPT
-
-    i have no idea why it doesn't work with bun
-*/
-
-if(process.argv[0].includes('bun'))
-    throw new Error('This script does not work with bun, Please run it with nodejs');
-
 const crypto = require('crypto');
 const CryptoJS = require("crypto-js");
 const argon2 = require('argon2-wasm-pro');
@@ -29,7 +20,6 @@ let salt = crypto.randomBytes(32).toString('base64');
 
 console.log(`Generating password for ${username}`);
 
-// Doesn't get past this point with bun, no idea why, works in the other script? Help would be appreciated.
 argon2.hash({ pass: CryptoJS.SHA256(password).toString(), salt: salt }).then(h => {
     users.push({
         username: username,

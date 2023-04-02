@@ -21,6 +21,7 @@ if(config.useSSL){
 }
 
 let handleRequest = ( preq, pres ) => {
+    console.log('Handing request: '+preq.method+' '+preq.headers.host+'/'+preq.url);
     try{
         let rec = records.find(r => r.domain === preq.headers.host);
         if(!rec){
