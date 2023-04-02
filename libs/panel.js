@@ -15,9 +15,9 @@ if(!fs.existsSync('data/records.json'))
 
 let sessions = [];
 
-let main = async ( port, proxyPort ) => {
+let main = async ( port ) => {
     let app = new Elysia();
-    proxy.main(proxyPort);
+    proxy.main();
 
     app.get('/', () => Bun.file('views/panel.html'));
 

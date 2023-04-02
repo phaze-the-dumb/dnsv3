@@ -1,32 +1,60 @@
 const fs = require('fs');
+const http = require('http');
+const https = require('https');
+const pkg = require('../package.json');
 
 let records = JSON.parse(fs.readFileSync('./data/records.json', 'utf8'));
+let errors = {
+    404: fs.readFileSync('views/404.html', 'utf8'),
+    500: fs.readFileSync('views/500.html', 'utf8'),
+    503: fs.readFileSync('views/503.html', 'utf8')
+}
 
-let main = ( port ) => {
-    Bun.serve({
-        port: port,
-        async fetch( req ){
-            let rec = records.find(x => x.domain === req.headers.get('host'));
-            if(!rec)return new Response(Bun.file('views/404.html'));
+let main = () => {
+    http.createServer((preq, pres) => {
+        try{
+            let rec = records.find(r => r.domain === preq.headers.host);
+            if(!rec){
+                pres.writeHead(404, { 'Content-Type': 'text/html' });
+                pres.write(errors[404]);
 
-            try{
-                let preq = await fetch('http://' + rec.ip + ':' + rec.port + new URL(req.url).pathname, {
-                    method: req.method,
-                    headers: req.headers.toJSON(),
-                    body: req.body
-                });
-
-                return preq;
-            } catch(e){
-                console.error(e);
-                return new Response(Bun.file('views/503.html'));
+                pres.end();
+                return;
             }
-        },
-        error( err ){
-            console.error(err);
-            return new Response(Bun.file('views/500.html'));
+
+            let proxy = http.request({
+                hostname: rec.domain,
+                port: rec.port,
+                path: preq.url,
+                method: preq.method,
+                headers: preq.headers
+            }, ( res ) => {
+                if(res.headers['server'])
+                    res.headers['server'] = res.headers['server'] + ' (Firefly '+pkg.version+')';
+                else
+                    res.headers['server'] = 'Firefly '+pkg.version;
+
+                pres.writeHead(res.statusCode, res.headers);
+                res.pipe(pres, { end: true });
+            });
+
+            proxy.on('error', ( err ) => {
+                console.error(err);
+
+                pres.writeHead(503, { 'Content-Type': 'text/html' });
+                pres.write(errors[503]);
+                pres.end();
+            });
+
+            preq.pipe(proxy, { end: true });
+        } catch(e){
+            console.error(e);
+
+            pres.writeHead(500, { 'Content-Type': 'text/html' });
+            pres.write(errors[500]);
+            pres.end();
         }
-    })
+    }).listen(80);
 }
 
 let reloadRecords = () => {

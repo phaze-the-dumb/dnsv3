@@ -1,6 +1,7 @@
 {
   "name": "newdns",
   "module": "index.ts",
+  "version": "v0.0.1",
   "devDependencies": {
     "bun-types": "^0.4.0"
   },
