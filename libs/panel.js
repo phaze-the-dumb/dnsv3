@@ -202,7 +202,7 @@ let main = async ( port ) => {
         if(!user)
             return res.send(JSON.stringify({ ok: false, error: 'User doesn\'t exist' }));
 
-        if(!id || !body || !body.ip || !body.port)
+        if(!req.params.id || !body || !body.ip || !body.port)
             return res.send(JSON.stringify({ ok: false, error: 'Bad Request' }));
 
         let data = '';
@@ -242,7 +242,7 @@ let main = async ( port ) => {
         if(!user)
             return res.send(JSON.stringify({ ok: false, error: 'User doesn\'t exist' }));
 
-        if(!id)
+        if(!req.params.id)
             return res.send(JSON.stringify({ ok: false, error: 'Bad Request' }));
 
         let records = JSON.parse(fs.readFileSync('data/records.json', 'utf8'));
