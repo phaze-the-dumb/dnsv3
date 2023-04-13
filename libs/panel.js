@@ -21,7 +21,7 @@ let main = async ( port ) => {
 
     app.get('/', ( req, res ) => {
         res.header('Content-Type', 'text/html');
-        res.status(404);
+        res.status(200); // Why the fuck did i write 404?
         res.send(fs.readFileSync('views/panel.html', 'utf8'));
         return;
     });
