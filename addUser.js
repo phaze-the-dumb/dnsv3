@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 const CryptoJS = require("crypto-js");
-const argon2 = require('argon2-wasm-pro');
+const argon2 = require('argon2');
 const fs = require('fs');
 
 let username = process.argv[2];
@@ -16,17 +16,15 @@ if(!fs.existsSync('data/users.json'))
 
 let users = JSON.parse(fs.readFileSync('data/users.json'));
 let password = crypto.randomUUID();
-let salt = crypto.randomBytes(32).toString('base64');
 
 console.log(`Generating password for ${username}`);
 
-argon2.hash({ pass: CryptoJS.SHA256(password).toString(), salt: salt }).then(h => {
+argon2.hash(CryptoJS.SHA256(password).toString(), { type: argon2.argon2id, hashLength: 50 }).then(h => {
     users.push({
         username: username,
-        password: h.encoded,
+        password: h,
         passwordChange: true,
-        id: crypto.randomUUID(),
-        salt: salt
+        id: crypto.randomUUID()
     });
     
     fs.writeFileSync('data/users.json', JSON.stringify(users));

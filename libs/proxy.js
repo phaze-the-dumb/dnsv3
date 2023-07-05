@@ -1,6 +1,7 @@
 const fs = require('fs');
 const http = require('http');
 const https = require('https');
+const ws = require('ws');
 const config = require('../config.json');
 const pkg = require('../package.json');
 
@@ -81,6 +82,15 @@ let main = () => {
         }
 
         https.createServer(options, handleRequest).listen(443);
+
+        let httpsServer = https.createServer(options).listen(8443);
+        let wsServer = new ws.Server({ server: httpsServer });
+
+        wsServer.on('connection', ( ws, req ) => {
+            console.log(req.headers.host);
+
+            
+        })
     }
 }
 

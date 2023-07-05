@@ -1,6 +1,6 @@
 const express = require('express');
 const crypto = require('crypto');
-const argon2 = require('argon2-wasm-pro');
+const argon2 = require('argon2');
 const proxy = require('./proxy');
 const fs = require('fs');
 
@@ -128,15 +128,17 @@ let main = async ( port ) => {
             let user = null;
 
             for (let i = 0; i < users.length; i++) {
-                let password = (await argon2.hash({ pass: body[1], salt: users[i].salt })).encoded;
+                try{
+                    let password = await argon2.verify( users[i].password, body[1] );
 
-                if(
-                    users[i].password == password &&
-                    users[i].username == body[0]
-                ) user = users[i];
+                    if(
+                        password &&
+                        users[i].username == body[0]
+                    ) user = users[i];
+                } catch(e){}
             }
 
-            if(!user)res.send(JSON.stringify({ ok: false, error: 'Incorrect Username or Password' }));
+            if(!user)return res.send(JSON.stringify({ ok: false, error: 'Incorrect Username or Password' }));
             sessions = sessions.filter(x => x.id !== user.id);
 
             let sessionData = {
@@ -174,7 +176,7 @@ let main = async ( port ) => {
         req.on('end', async () => {
             let body = JSON.parse(data);
             if(!body)return res.send(JSON.stringify({ ok: false, error: 'Bad Request' }));
-            let password = (await argon2.hash({ pass: body.password, salt: user.salt })).encoded;
+            let password = await argon2.hash( body.password, { type: argon2.argon2id, hashLength: 50 } );
 
             user.password = password;
             user.passwordChange = false;
@@ -253,9 +255,7 @@ let main = async ( port ) => {
         res.send(JSON.stringify({ ok: true }));
     })
 
-    app.use((req, res) => {
-        res.sendFile('views/404.html');
-    })
+    app.use((req, res) => res.send(fs.readFileSync('views/404.html', 'utf8')));
 
     console.log('Panel listening on port ' + port);
     app.listen({ port });
