@@ -255,7 +255,9 @@ let main = async ( port ) => {
         res.send(JSON.stringify({ ok: true }));
     })
 
-    app.use((req, res) => res.send(fs.readFileSync('views/404.html', 'utf8')));
+    app.use((req, res) => {
+        res.sendFile(__dirname + '/views/404.html');
+    })
 
     console.log('Panel listening on port ' + port);
     app.listen({ port });
