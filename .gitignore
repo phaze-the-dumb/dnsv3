@@ -1,3 +1,5 @@
 node_modules/
 data/
 ssl/
+config.json
+data/users.json
