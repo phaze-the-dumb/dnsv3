@@ -22,13 +22,11 @@ if(config.useSSL){
 }
 
 let handleWSRequest = ( w, preq ) => {
-    console.log('WS request to '+preq.headers.host)
     try{
         let rec = records.find(r => r.domain === preq.headers.host.split(':')[0] && r.type === 'ws');
         if(!rec)
             return w.close();
 
-        console.log('Connecting to: ws://'+rec.ip+':'+rec.port+preq.url);
         let originWS = new ws('ws://'+rec.ip+':'+rec.port+preq.url);
 
         originWS.on('error', ( err ) => {
@@ -110,11 +108,8 @@ let main = () => {
         let wsServer = new ws.Server({ noServer: true });
 
         httpsServer.on('upgrade', ( request, socket, head ) => {
-            console.log('Socket upgradings!');
-            wsServer.handleUpgrade(request, socket, head, ( w ) => {
-                console.log('Socket upgraded');
-                handleWSRequest(w, request);
-            });
+            wsServer.handleUpgrade(request, socket, head, ( w ) =>
+                handleWSRequest(w, request));
         });
         httpsServer.listen(443);
     }
