@@ -170,7 +170,7 @@ body{
 
 .records-body{
     overflow: auto;
-    height: calc(100% - 75px);
+    height: calc(100% - 114px);
     padding: 10px;
 }
 
