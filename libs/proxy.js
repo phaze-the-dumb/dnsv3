@@ -31,25 +31,18 @@ let handleWSRequest = ( w, preq ) => {
         console.log('Connecting to: ws://'+rec.ip+':'+rec.port+preq.url);
         let originWS = new ws('ws://'+rec.ip+':'+rec.port+preq.url);
 
-        originWS.on('message', ( msg ) => {
-            console.log('To Client');
-            w.send(msg);
-        })
-
         originWS.on('error', ( err ) => {
             console.error(err);
             w.close();
         })
-
-        w.on('message', ( msg ) => {
-            console.log('To Server');
-            originWS.send(msg);
-        });
-
+        
         w.on('error', ( err ) => {
             console.error(err);
             originWS.close();
-        }) 
+        })
+    
+        originWS.on('message', ( msg ) => w.send(msg));
+        w.on('message', ( msg ) => originWS.send(msg));
 
         originWS.on('close', () => w.close());
         w.on('close', () => originWS.close());
