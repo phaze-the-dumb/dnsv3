@@ -31,10 +31,6 @@ let handleWSRequest = ( w, preq ) => {
         console.log('Connecting to: ws://'+rec.ip+':'+rec.port+preq.url);
         let originWS = new ws('ws://'+rec.ip+':'+rec.port+preq.url);
 
-        originWS.on('headers', ( headers ) => {
-            console.log(headers);
-        })
-
         originWS.on('message', ( msg ) => {
             console.log(msg);
             ws.send(msg.data);
@@ -117,10 +113,15 @@ let main = () => {
             cert: fs.readFileSync('./ssl/cert.pem')
         }
 
-        https.createServer(options, handleRequest).listen(443);
-        let httpsServer = https.createServer(options).listen(8443);
+        let httpsServer = https.createServer(options, handleRequest).listen(443);
+        let wsServer = new ws.Server({ noServer: true });
 
-        let wsServer = new ws.Server({ server: httpsServer });
+        httpsServer.on('upgrade', ( request, socket, head ) => {
+            wsServer.handleUpgrade(request, socket, head, ( w ) => {
+                w.emit('connection', w, request);
+            });
+        });
+
         wsServer.on('connection', handleWSRequest);
     }
 }
