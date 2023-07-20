@@ -117,7 +117,9 @@ let main = () => {
         let wsServer = new ws.Server({ noServer: true });
 
         httpsServer.on('upgrade', ( request, socket, head ) => {
+            console.log('Socket upgradings!');
             wsServer.handleUpgrade(request, socket, head, ( w ) => {
+                console.log('Socket upgraded');
                 w.emit('connection', w, request);
             });
         });
