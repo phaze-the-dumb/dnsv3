@@ -41,8 +41,8 @@ let handleWSRequest = ( w, preq ) => {
             originWS.close();
         })
     
-        originWS.on('message', ( msg ) => w.send(msg));
-        w.on('message', ( msg ) => originWS.send(msg));
+        originWS.on('message', ( msg ) => w.send(msg.toString()));
+        w.on('message', ( msg ) => originWS.send(msg.toString()));
 
         originWS.on('close', () => w.close());
         w.on('close', () => originWS.close());
