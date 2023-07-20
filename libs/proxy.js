@@ -120,11 +120,9 @@ let main = () => {
             console.log('Socket upgradings!');
             wsServer.handleUpgrade(request, socket, head, ( w ) => {
                 console.log('Socket upgraded');
-                w.emit('connection', w, request);
+                handleWSRequest(w, request);
             });
         });
-
-        wsServer.on('connection', handleWSRequest);
         httpsServer.listen(443);
     }
 }
