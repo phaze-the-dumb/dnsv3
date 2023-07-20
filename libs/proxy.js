@@ -22,6 +22,7 @@ if(config.useSSL){
 }
 
 let handleWSRequest = ( w, preq ) => {
+    console.log('WS request to '+preq.headers.host)
     try{
         let rec = records.find(r => r.domain === preq.headers.host.split(':')[0] && r.type === 'ws');
         if(!rec)
