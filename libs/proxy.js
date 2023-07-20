@@ -31,6 +31,10 @@ let handleWSRequest = ( w, preq ) => {
         console.log('Connecting to: ws://'+rec.ip+':'+rec.port+preq.url);
         let originWS = new ws('ws://'+rec.ip+':'+rec.port+preq.url);
 
+        originWS.on('headers', ( headers ) => {
+            console.log(headers);
+        })
+
         originWS.on('message', ( msg ) => {
             console.log(msg);
             ws.send(msg.data);
