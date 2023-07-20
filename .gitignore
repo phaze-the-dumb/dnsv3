@@ -3,3 +3,4 @@ data/
 ssl/
 config.json
 data/users.json
+data/records.json

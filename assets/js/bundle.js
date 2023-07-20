@@ -10,6 +10,7 @@ let password2 = document.querySelector("#passreset-input-confirm");
 let newRecDomain = document.querySelector("#newrec-domain");
 let newRecIP = document.querySelector("#newrec-ip");
 let newRecPort = document.querySelector("#newrec-port");
+let newRecType = document.querySelector("#newrec-type");
 let currentNotif = null;
 let session = localStorage.getItem("session");
 let currentRecord = null;
@@ -261,7 +262,7 @@ let loadPanel = async () => {
     records.forEach(rec => {
         let record = document.createElement("div");
         record.className = "record";
-        record.innerHTML = rec.domain + ' >>> ' + rec.ip + ':' + rec.port + ' <span class="link">Edit</span>';
+        record.innerHTML = rec.type + 's://' + rec.domain + '/ >>> ' + rec.ip + ':' + rec.port + ' <span class="link">Edit</span>';
 
         record.onclick = () => {
             document.querySelector('.record-editor').querySelector('h2').innerHTML = rec.domain;
@@ -286,6 +287,7 @@ let newRecord = async () => {
         let domain = newRecDomain.value;
         let ip = newRecIP.value;
         let port = newRecPort.value;
+        let type = newRecType.value;
 
         if(!domain || !ip || !port)
             return notify({ title: 'Error', body: 'Please fill in all fields.' });
@@ -297,7 +299,7 @@ let newRecord = async () => {
                 auth: session
             },
             body: JSON.stringify({
-                record: { domain, ip, port }
+                record: { domain, ip, port, type }
             })
         });
 
@@ -319,7 +321,7 @@ let newRecord = async () => {
             records.forEach(rec => {
                 let record = document.createElement("div");
                 record.className = "record";
-                record.innerHTML = rec.domain + ' >>> ' + rec.ip + ':' + rec.port + ' <span class="link">Edit</span>';
+                record.innerHTML = rec.type + 's://' + rec.domain + '/ >>> ' + rec.ip + ':' + rec.port + ' <span class="link">Edit</span>';
 
                 record.onclick = () => {
                     document.querySelector('.record-editor').querySelector('h2').innerHTML = rec.domain;
@@ -485,7 +487,7 @@ document.querySelector("#recordedit-save").onclick = () => {
             records.forEach(rec => {
                 let record = document.createElement("div");
                 record.className = "record";
-                record.innerHTML = rec.domain + ' >>> ' + rec.ip + ':' + rec.port + ' <span class="link">Edit</span>';
+                record.innerHTML = rec.type + 's://' + rec.domain + '/ >>> ' + rec.ip + ':' + rec.port + ' <span class="link">Edit</span>';
 
                 record.onclick = () => {
                     document.querySelector('.record-editor').querySelector('h2').innerHTML = rec.domain;
@@ -538,7 +540,7 @@ document.querySelector("#recordedit-delete").onclick = () => {
             records.forEach(rec => {
                 let record = document.createElement("div");
                 record.className = "record";
-                record.innerHTML = rec.domain + ' >>> ' + rec.ip + ':' + rec.port + ' <span class="link">Edit</span>';
+                record.innerHTML = rec.type + 's://' + rec.domain + '/ >>> ' + rec.ip + ':' + rec.port + ' <span class="link">Edit</span>';
 
                 record.onclick = () => {
                     document.querySelector('.record-editor').querySelector('h2').innerHTML = rec.domain;

@@ -21,9 +21,46 @@ if(config.useSSL){
     }
 }
 
+let handleWSRequest = ( w, preq ) => {
+    try{
+        let rec = records.find(r => r.domain === preq.headers.host.split(':')[0] && r.type === 'ws');
+        if(!rec)
+            return w.close();
+
+        console.log('Connecting to: ws://'+rec.ip+':'+rec.port+preq.url);
+        let originWS = new ws('ws://'+rec.ip+':'+rec.port+preq.url);
+
+        originWS.on('message', ( msg ) => {
+            console.log(msg);
+            ws.send(msg.data);
+        })
+
+        originWS.on('error', ( err ) => {
+            console.error(err);
+            w.close();
+        })
+
+        w.on('message', ( msg ) => {
+            console.log(msg);
+            w.send(msg);
+        });
+
+        w.on('error', ( err ) => {
+            console.error(err);
+            originWS.close();
+        }) 
+
+        originWS.on('close', () => w.close());
+        w.on('close', () => originWS.close());
+    } catch(e){
+        console.error(e);
+        ws.close();
+    }
+}
+
 let handleRequest = ( preq, pres ) => {
     try{
-        let rec = records.find(r => r.domain === preq.headers.host);
+        let rec = records.find(r => r.domain === preq.headers.host && r.type === 'http');
         if(!rec){
             pres.writeHead(404, { 'Content-Type': 'text/html' });
             pres.write(errors[404]);
@@ -69,6 +106,9 @@ let handleRequest = ( preq, pres ) => {
 let main = () => {
     http.createServer(handleRequest).listen(80);
 
+    let wServer = new ws.Server({ port: 8081 });
+    wServer.on('connection', handleWSRequest);
+
     if(config.useSSL){
         let options = {
             key: fs.readFileSync('./ssl/key.pem'),
@@ -80,16 +120,11 @@ let main = () => {
         let httpsServer = https.createServer(options).listen(8443);
         let wsServer = new ws.Server({ server: httpsServer });
 
-        wsServer.on('connection', ( ws, req ) => {
-            console.log(req.headers.host);
-
-            
-        })
+        wsServer.on('connection', handleWSRequest);
     }
 }
 
 let reloadRecords = () => {
-    console.log('Reloading records...');
     records = JSON.parse(fs.readFileSync('./data/records.json', 'utf8'));
 }
 
