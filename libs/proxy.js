@@ -113,7 +113,8 @@ let main = () => {
             cert: fs.readFileSync('./ssl/cert.pem')
         }
 
-        let httpsServer = https.createServer(options, handleRequest).listen(443);
+        https.createServer(options, handleRequest).listen(443);
+        let httpsServer = https.createServer(options).listen(8443);
 
         let wsServer = new ws.Server({ server: httpsServer });
         wsServer.on('connection', handleWSRequest);
