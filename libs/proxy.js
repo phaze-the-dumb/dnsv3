@@ -33,7 +33,7 @@ let handleWSRequest = ( w, preq ) => {
 
         originWS.on('message', ( msg ) => {
             console.log(msg);
-            w.send(msg.data.toString());
+            w.send(msg);
         })
 
         originWS.on('error', ( err ) => {
@@ -43,7 +43,7 @@ let handleWSRequest = ( w, preq ) => {
 
         w.on('message', ( msg ) => {
             console.log(msg);
-            originWS.send(msg.toString());
+            originWS.send(msg);
         });
 
         w.on('error', ( err ) => {
