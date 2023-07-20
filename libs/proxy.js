@@ -106,20 +106,15 @@ let handleRequest = ( preq, pres ) => {
 let main = () => {
     http.createServer(handleRequest).listen(80);
 
-    let wServer = new ws.Server({ port: 8081 });
-    wServer.on('connection', handleWSRequest);
-
     if(config.useSSL){
         let options = {
             key: fs.readFileSync('./ssl/key.pem'),
             cert: fs.readFileSync('./ssl/cert.pem')
         }
 
-        https.createServer(options, handleRequest).listen(443);
+        let httpsServer = https.createServer(options, handleRequest).listen(443);
 
-        let httpsServer = https.createServer(options).listen(8443);
         let wsServer = new ws.Server({ server: httpsServer });
-
         wsServer.on('connection', handleWSRequest);
     }
 }
