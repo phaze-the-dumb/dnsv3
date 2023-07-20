@@ -113,7 +113,7 @@ let main = () => {
             cert: fs.readFileSync('./ssl/cert.pem')
         }
 
-        let httpsServer = https.createServer(options, handleRequest).listen(443);
+        let httpsServer = https.createServer(options, handleRequest)
         let wsServer = new ws.Server({ noServer: true });
 
         httpsServer.on('upgrade', ( request, socket, head ) => {
@@ -124,6 +124,7 @@ let main = () => {
         });
 
         wsServer.on('connection', handleWSRequest);
+        httpsServer.listen(443);
     }
 }
 
