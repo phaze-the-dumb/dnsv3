@@ -32,7 +32,7 @@ let handleWSRequest = ( w, preq ) => {
         let originWS = new ws('ws://'+rec.ip+':'+rec.port+preq.url);
 
         originWS.on('message', ( msg ) => {
-            console.log(msg);
+            console.log('To Client');
             w.send(msg);
         })
 
@@ -42,7 +42,7 @@ let handleWSRequest = ( w, preq ) => {
         })
 
         w.on('message', ( msg ) => {
-            console.log(msg);
+            console.log('To Server');
             originWS.send(msg);
         });
 
