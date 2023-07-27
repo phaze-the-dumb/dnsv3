@@ -1,7 +1,6 @@
 const fastify = require('fastify');
 const crypto = require('crypto');
 const argon2 = require('argon2');
-const proxy = require('./proxy');
 const fs = require('fs');
 
 if(!fs.existsSync('data'))
@@ -13,6 +12,7 @@ if(!fs.existsSync('data/users.json'))
 if(!fs.existsSync('data/records.json'))
     fs.writeFileSync('data/records.json', '[]');
 
+const proxy = require('./proxy');
 let sessions = [];
 
 let main = async ( port ) => {

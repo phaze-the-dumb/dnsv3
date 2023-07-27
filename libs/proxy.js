@@ -5,7 +5,7 @@ const ws = require('ws');
 const config = require('../config.json');
 const pkg = require('../package.json');
 
-let records = JSON.parse(fs.readFileSync('./data/records.json', 'utf8'));
+let records = JSON.parse(fs.readFileSync('data/records.json', 'utf8'));
 let errors = {
     404: fs.readFileSync('views/404.html', 'utf8'),
     500: fs.readFileSync('views/500.html', 'utf8'),
